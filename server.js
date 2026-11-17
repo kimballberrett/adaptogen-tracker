@@ -5,6 +5,7 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { join, extname, normalize, sep } from 'node:path';
+import { gzipSync } from 'node:zlib';
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = join(import.meta.dirname, 'public');
@@ -20,13 +21,21 @@ const MIME = {
 
 createServer(async (req, res) => {
   try {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const { pathname } = new URL(req.url.replace(/^\/+/, '/'), 'http://localhost');
     let file = normalize(join(PUBLIC_DIR, decodeURIComponent(pathname)));
     if (file !== PUBLIC_DIR && !file.startsWith(PUBLIC_DIR + sep)) throw Object.assign(new Error(), { status: 403 });
     const info = await stat(file).catch(() => null);
     if (!info || info.isDirectory()) file = join(PUBLIC_DIR, 'index.html');
-    res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-cache' });
-    res.end(await readFile(file));
+    const type = MIME[extname(file)] ?? 'application/octet-stream';
+    const headers = { 'content-type': type, 'cache-control': 'no-cache', vary: 'accept-encoding' };
+    let body = await readFile(file);
+    // Gzip text files: over a slow link (Tailscale Funnel) bytes are what cost time.
+    if (/text|javascript|svg|json/.test(type) && /\bgzip\b/.test(req.headers['accept-encoding'] ?? '')) {
+      body = gzipSync(body);
+      headers['content-encoding'] = 'gzip';
+    }
+    res.writeHead(200, headers);
+    res.end(body);
   } catch (err) {
     res.writeHead(err.status ?? 500);
     res.end();
