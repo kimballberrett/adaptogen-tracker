@@ -1,0 +1,14 @@
+{
+  "name": "adaptogen-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Blind taste test log for adaptogen drinks",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}
