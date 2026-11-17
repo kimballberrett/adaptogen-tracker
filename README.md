@@ -57,3 +57,5 @@ npm start        # serves public/ on http://localhost:3000
 - `public/icons.js` - line icons and the two illustrations
 - `public/styles.css` - design tokens, components, animations
 - `public/sw.js` - offline cache
+
+The design follows a Dribbble habit-tracker shot, kept locally at `docs/style-reference.png` (not committed).

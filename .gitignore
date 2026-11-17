@@ -1,3 +1,6 @@
 node_modules/
 data/
 .env
+
+# Design reference (someone else's shot), kept locally only
+docs/style-reference.png
